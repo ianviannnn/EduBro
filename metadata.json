@@ -1,0 +1,5 @@
+{
+  "name": "EduBro",
+  "description": "A student productivity app featuring task management with priorities and a focus timer (Pomodoro style) with a clean dark theme UI.",
+  "requestFramePermissions": []
+}
