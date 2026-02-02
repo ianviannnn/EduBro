@@ -1,44 +1,45 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Play, Pause, RotateCcw, Plus, Minus } from 'lucide-react';
 
 interface FocusTimerProps {
   isDarkMode: boolean;
+  timeLeft: number;
+  setTimeLeft: (time: number) => void;
+  isActive: boolean;
+  setIsActive: (active: boolean) => void;
+  mode: 'focus' | 'break';
+  setMode: (mode: 'focus' | 'break') => void;
+  focusDuration: number;
+  setFocusDuration: (time: number) => void;
+  breakDuration: number;
+  setBreakDuration: (time: number) => void;
 }
 
-const FocusTimer: React.FC<FocusTimerProps> = ({ isDarkMode }) => {
-  const [focusDuration, setFocusDuration] = useState(25 * 60);
-  const [breakDuration, setBreakDuration] = useState(5 * 60);
-  const [mode, setMode] = useState<'focus' | 'break'>('focus');
-  const [timeLeft, setTimeLeft] = useState(mode === 'focus' ? focusDuration : breakDuration);
-  const [isActive, setIsActive] = useState(false);
-
-  useEffect(() => {
-    let interval: number | undefined;
-
-    if (isActive && timeLeft > 0) {
-      interval = window.setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setIsActive(false);
-      const message = mode === 'focus' ? 'Sesi fokus selesai! Waktunya istirahat.' : 'Waktu istirahat habis! Mari kembali fokus.';
-      alert(message);
-      resetTimer();
-    }
-
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft, mode]);
+const FocusTimer: React.FC<FocusTimerProps> = ({ 
+  isDarkMode, 
+  timeLeft, 
+  setTimeLeft, 
+  isActive, 
+  setIsActive, 
+  mode, 
+  setMode,
+  focusDuration,
+  setFocusDuration,
+  breakDuration,
+  setBreakDuration
+}) => {
 
   const toggleTimer = () => setIsActive(!isActive);
 
   const resetTimer = () => {
-    const DEFAULT_TIME = mode === 'focus' ? 25 * 60 : 5 * 60;
     setIsActive(false);
-    setTimeLeft(DEFAULT_TIME);
+    const resetTime = mode === 'focus' ? focusDuration : breakDuration;
+    setTimeLeft(resetTime);
   };
 
   const switchMode = (newMode: 'focus' | 'break') => {
+    if (newMode === mode) return;
     setMode(newMode);
     setIsActive(false);
     const newTime = newMode === 'focus' ? focusDuration : breakDuration;

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ClipboardList, 
   Star, 
@@ -30,6 +30,13 @@ const App: React.FC = () => {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Timer States (Moved here to persist across tab changes)
+  const [focusDuration, setFocusDuration] = useState(25 * 60);
+  const [breakDuration, setBreakDuration] = useState(5 * 60);
+  const [timerMode, setTimerMode] = useState<'focus' | 'break'>('focus');
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('edubro_tasks', JSON.stringify(tasks));
   }, [tasks]);
@@ -37,6 +44,27 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('edubro_theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
+
+  // Global Timer Effect
+  useEffect(() => {
+    let interval: number | undefined;
+
+    if (isTimerActive && timeLeft > 0) {
+      interval = window.setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsTimerActive(false);
+      const message = timerMode === 'focus' ? 'Sesi fokus selesai! Waktunya istirahat.' : 'Waktu istirahat habis! Mari kembali fokus.';
+      alert(message);
+      
+      // Auto reset to default of current mode
+      const resetTime = timerMode === 'focus' ? focusDuration : breakDuration;
+      setTimeLeft(resetTime);
+    }
+
+    return () => clearInterval(interval);
+  }, [isTimerActive, timeLeft, timerMode, focusDuration, breakDuration]);
 
   const addTask = (newTask: Task) => {
     setTasks(prev => [...prev, newTask]);
@@ -58,7 +86,21 @@ const App: React.FC = () => {
       case 'Prioritas':
         return <PriorityView tasks={tasks} toggleTask={toggleTask} isDarkMode={isDarkMode} />;
       case 'Fokus':
-        return <FocusTimer isDarkMode={isDarkMode} />;
+        return (
+          <FocusTimer 
+            isDarkMode={isDarkMode} 
+            timeLeft={timeLeft}
+            setTimeLeft={setTimeLeft}
+            isActive={isTimerActive}
+            setIsActive={setIsTimerActive}
+            mode={timerMode}
+            setMode={setTimerMode}
+            focusDuration={focusDuration}
+            setFocusDuration={setFocusDuration}
+            breakDuration={breakDuration}
+            setBreakDuration={setBreakDuration}
+          />
+        );
       case 'Pengaturan':
         return <SettingsView isDarkMode={isDarkMode} />;
       default:
@@ -127,6 +169,7 @@ const App: React.FC = () => {
           icon={<Timer size={22} />} 
           label="Fokus" 
           isDarkMode={isDarkMode}
+          isTimerActive={isTimerActive}
         />
         <NavButton 
           active={activeTab === 'Pengaturan'} 
@@ -155,12 +198,13 @@ interface NavButtonProps {
   icon: React.ReactNode;
   label: string;
   isDarkMode: boolean;
+  isTimerActive?: boolean;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label, isDarkMode }) => (
+const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label, isDarkMode, isTimerActive }) => (
   <button 
     onClick={onClick}
-    className={`flex flex-col items-center gap-1 transition-all active:scale-75 ${
+    className={`flex flex-col items-center gap-1 transition-all active:scale-75 relative ${
       active 
         ? 'text-blue-500' 
         : isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
@@ -168,6 +212,9 @@ const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label, isD
   >
     <div className={`transition-all duration-500 ${active ? 'scale-110' : 'scale-100'}`}>
       {icon}
+      {isTimerActive && label === 'Fokus' && (
+        <span className="absolute top-0 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-sm shadow-red-500/50"></span>
+      )}
     </div>
     <span className="text-[10px] font-medium transition-colors duration-500">{label}</span>
   </button>
