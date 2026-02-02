@@ -12,12 +12,18 @@
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
+        
+        /* Transisi Global untuk Dark/Light Mode */
+        * {
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease, backdrop-filter 0.5s ease;
+        }
+
         /* Custom scrollbar for dark theme */
         ::-webkit-scrollbar {
             width: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: transparent;
         }
         ::-webkit-scrollbar-thumb {
             background: #334155;
@@ -25,6 +31,11 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #475569;
+        }
+
+        /* Animasi khusus untuk icon saat transisi */
+        .theme-toggle-icon {
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
     </style>
 <script type="importmap">
@@ -40,7 +51,7 @@
 }
 </script>
 </head>
-<body class="bg-[#0f172a] text-white overflow-hidden">
+<body class="bg-slate-900 overflow-hidden">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ClipboardList, 
   Star, 
@@ -7,8 +7,8 @@ import {
   Settings, 
   Menu, 
   Moon, 
-  Plus,
-  Inbox
+  Sun,
+  Plus
 } from 'lucide-react';
 import { TabType, Task } from './types';
 import TaskView from './components/TaskView';
@@ -19,6 +19,11 @@ import AddTaskModal from './components/AddTaskModal';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('Tugas');
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('edubro_theme');
+    return saved ? saved === 'dark' : true;
+  });
+  
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem('edubro_tasks');
     return saved ? JSON.parse(saved) : [];
@@ -28,6 +33,10 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('edubro_tasks', JSON.stringify(tasks));
   }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem('edubro_theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   const addTask = (newTask: Task) => {
     setTasks(prev => [...prev, newTask]);
@@ -45,28 +54,35 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'Tugas':
-        return <TaskView tasks={tasks} toggleTask={toggleTask} deleteTask={deleteTask} />;
+        return <TaskView tasks={tasks} toggleTask={toggleTask} deleteTask={deleteTask} isDarkMode={isDarkMode} />;
       case 'Prioritas':
-        return <PriorityView tasks={tasks} toggleTask={toggleTask} />;
+        return <PriorityView tasks={tasks} toggleTask={toggleTask} isDarkMode={isDarkMode} />;
       case 'Fokus':
-        return <FocusTimer />;
+        return <FocusTimer isDarkMode={isDarkMode} />;
       case 'Pengaturan':
-        return <SettingsView />;
+        return <SettingsView isDarkMode={isDarkMode} />;
       default:
         return null;
     }
   };
 
+  const themeClass = isDarkMode ? 'bg-[#0f172a] text-white' : 'bg-slate-50 text-slate-900';
+
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto shadow-2xl border-x border-slate-800 bg-[#0f172a] relative overflow-hidden">
+    <div className={`flex flex-col h-screen max-w-md mx-auto shadow-2xl border-x ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} ${themeClass} relative transition-all duration-500 ease-in-out overflow-hidden`}>
       {/* Header */}
-      <header className="px-6 pt-6 pb-2 flex justify-between items-center bg-[#0f172a] z-10">
-        <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-          <Menu size={20} className="text-slate-400" />
+      <header className={`px-6 pt-6 pb-2 flex justify-between items-center z-10 ${isDarkMode ? 'bg-[#0f172a]' : 'bg-slate-50'}`}>
+        <button className={`p-2 rounded-lg transition-all active:scale-75 ${isDarkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-200 text-slate-600'}`}>
+          <Menu size={20} />
         </button>
         <h1 className="text-xl font-bold tracking-tight">EduBro</h1>
-        <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-          <Moon size={20} className="text-slate-400" />
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className={`p-2 rounded-lg transition-all active:scale-75 ${isDarkMode ? 'hover:bg-slate-800 text-yellow-400' : 'hover:bg-slate-200 text-indigo-600'}`}
+        >
+          <div className="theme-toggle-icon">
+            {isDarkMode ? <Sun size={20} className="animate-in spin-in-90 duration-500" /> : <Moon size={20} className="animate-in spin-in-[-90deg] duration-500" />}
+          </div>
         </button>
       </header>
 
@@ -75,41 +91,49 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
 
-      {/* FAB - Only visible on Tugas and Prioritas tabs */}
+      {/* FAB - Animated Plus Button */}
       {(activeTab === 'Tugas' || activeTab === 'Prioritas') && (
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-24 right-[calc(50%-180px)] md:right-[calc(50%-180px)] p-4 bg-blue-600 rounded-full shadow-lg hover:bg-blue-500 transition-all active:scale-95 z-20"
+          className="fixed bottom-24 right-[calc(50%-180px)] p-4 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-500/40 hover:bg-blue-500 transition-all active:scale-50 group z-20"
         >
-          <Plus size={28} />
+          <Plus size={28} className="transition-transform duration-300 group-active:rotate-90 group-hover:scale-110" />
         </button>
       )}
 
       {/* Bottom Navigation */}
-      <nav className="absolute bottom-0 left-0 right-0 bg-[#1e293b]/80 backdrop-blur-md border-t border-slate-800 flex justify-around items-center py-3 px-2 z-30">
+      <nav className={`absolute bottom-0 left-0 right-0 border-t flex justify-around items-center py-3 px-2 z-30 backdrop-blur-md transition-all duration-500 ${
+        isDarkMode 
+          ? 'bg-[#1e293b]/80 border-slate-800' 
+          : 'bg-white/80 border-slate-200'
+      }`}>
         <NavButton 
           active={activeTab === 'Tugas'} 
           onClick={() => setActiveTab('Tugas')} 
           icon={<ClipboardList size={22} />} 
           label="Tugas" 
+          isDarkMode={isDarkMode}
         />
         <NavButton 
           active={activeTab === 'Prioritas'} 
           onClick={() => setActiveTab('Prioritas')} 
           icon={<Star size={22} />} 
           label="Prioritas" 
+          isDarkMode={isDarkMode}
         />
         <NavButton 
           active={activeTab === 'Fokus'} 
           onClick={() => setActiveTab('Fokus')} 
           icon={<Timer size={22} />} 
           label="Fokus" 
+          isDarkMode={isDarkMode}
         />
         <NavButton 
           active={activeTab === 'Pengaturan'} 
           onClick={() => setActiveTab('Pengaturan')} 
           icon={<Settings size={22} />} 
           label="Pengaturan" 
+          isDarkMode={isDarkMode}
         />
       </nav>
 
@@ -118,6 +142,7 @@ const App: React.FC = () => {
         <AddTaskModal 
           onClose={() => setIsModalOpen(false)} 
           onSave={addTask} 
+          isDarkMode={isDarkMode}
         />
       )}
     </div>
@@ -129,15 +154,22 @@ interface NavButtonProps {
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  isDarkMode: boolean;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label }) => (
+const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label, isDarkMode }) => (
   <button 
     onClick={onClick}
-    className={`flex flex-col items-center gap-1 transition-all ${active ? 'text-blue-500' : 'text-slate-500 hover:text-slate-300'}`}
+    className={`flex flex-col items-center gap-1 transition-all active:scale-75 ${
+      active 
+        ? 'text-blue-500' 
+        : isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
+    }`}
   >
-    {icon}
-    <span className="text-[10px] font-medium">{label}</span>
+    <div className={`transition-all duration-500 ${active ? 'scale-110' : 'scale-100'}`}>
+      {icon}
+    </div>
+    <span className="text-[10px] font-medium transition-colors duration-500">{label}</span>
   </button>
 );
 

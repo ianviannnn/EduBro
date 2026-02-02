@@ -2,7 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Plus, Minus } from 'lucide-react';
 
-const FocusTimer: React.FC = () => {
+interface FocusTimerProps {
+  isDarkMode: boolean;
+}
+
+const FocusTimer: React.FC<FocusTimerProps> = ({ isDarkMode }) => {
   const [focusDuration, setFocusDuration] = useState(25 * 60);
   const [breakDuration, setBreakDuration] = useState(5 * 60);
   const [mode, setMode] = useState<'focus' | 'break'>('focus');
@@ -29,14 +33,9 @@ const FocusTimer: React.FC = () => {
   const toggleTimer = () => setIsActive(!isActive);
 
   const resetTimer = () => {
-    const RESET_TIME = 5 * 60; // 5 minutes
+    const DEFAULT_TIME = mode === 'focus' ? 25 * 60 : 5 * 60;
     setIsActive(false);
-    if (mode === 'focus') {
-      setFocusDuration(RESET_TIME);
-    } else {
-      setBreakDuration(RESET_TIME);
-    }
-    setTimeLeft(RESET_TIME);
+    setTimeLeft(DEFAULT_TIME);
   };
 
   const switchMode = (newMode: 'focus' | 'break') => {
@@ -48,7 +47,6 @@ const FocusTimer: React.FC = () => {
 
   const adjustDuration = (amount: number) => {
     if (isActive) return;
-    // Set minimum duration to 5 minutes (300 seconds)
     const MIN_DURATION = 300; 
     
     if (mode === 'focus') {
@@ -75,13 +73,15 @@ const FocusTimer: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col items-center animate-in zoom-in duration-500">
-      {/* Title Section (Top) */}
       <div className="text-center space-y-2 pt-4">
-        <h2 className="text-3xl font-extrabold tracking-tight">Mode {mode === 'focus' ? 'Fokus' : 'Istirahat'}</h2>
-        <p className="text-slate-500 text-sm">Sesuaikan waktu dan mulai belajar</p>
+        <h2 className={`text-3xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+          Mode {mode === 'focus' ? 'Fokus' : 'Istirahat'}
+        </h2>
+        <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} text-sm`}>
+          Mulai belajar tanpa gangguan
+        </p>
       </div>
 
-      {/* Hero Timer Circle (Center) */}
       <div className="flex-1 flex items-center justify-center w-full min-h-[350px]">
         <div className="relative flex items-center justify-center">
           <svg className="w-80 h-80 transform -rotate-90">
@@ -92,7 +92,7 @@ const FocusTimer: React.FC = () => {
               stroke="currentColor"
               strokeWidth="12"
               fill="transparent"
-              className="text-slate-800/50"
+              className={isDarkMode ? 'text-slate-800/50' : 'text-slate-200'}
             />
             <circle
               cx="160"
@@ -110,91 +110,89 @@ const FocusTimer: React.FC = () => {
             />
           </svg>
 
-          {/* Timer Text Display Perfectly Centered */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-7xl font-black font-mono tracking-tighter tabular-nums text-white">
+            <span className={`text-7xl font-black font-mono tracking-tighter tabular-nums transition-all duration-300 ${isActive ? 'scale-110' : 'scale-100'} ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
               {formatTime(timeLeft)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Controls Section (Bottom) */}
       <div className="flex flex-col items-center gap-6 w-full pb-10">
-        
-        {/* Time Adjustment Controls (Moved above Play button) */}
-        <div className="flex items-center gap-6 px-4 py-2 bg-slate-900/30 rounded-2xl border border-slate-800/50">
+        <div className={`flex items-center gap-6 px-4 py-2 rounded-2xl border transition-colors ${
+          isDarkMode ? 'bg-slate-900/30 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+        }`}>
           <button 
             disabled={isActive}
             onClick={() => adjustDuration(-5 * 60)}
-            className="p-2 bg-slate-800 rounded-xl hover:bg-slate-700 disabled:opacity-30 transition-all active:scale-90"
-            aria-label="Kurangi waktu"
+            className={`p-2 rounded-xl transition-all active:scale-50 disabled:opacity-30 ${
+              isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            }`}
           >
-            {/* Fix: Removed invalid '消耗' tag */}
-            <Minus size={20} className="text-slate-300" />
+            <Minus size={20} />
           </button>
           <div className="flex flex-col items-center min-w-[80px]">
-            <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Set Waktu</span>
-            <span className="text-xs font-bold text-blue-400">± 5 Menit</span>
+            <span className={`text-[10px] font-bold tracking-widest uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Waktu</span>
+            <span className="text-xs font-bold text-blue-500">± 5 Menit</span>
           </div>
           <button 
             disabled={isActive}
             onClick={() => adjustDuration(5 * 60)}
-            className="p-2 bg-slate-800 rounded-xl hover:bg-slate-700 disabled:opacity-30 transition-all active:scale-90"
-            aria-label="Tambah waktu"
+            className={`p-2 rounded-xl transition-all active:scale-50 disabled:opacity-30 ${
+              isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            }`}
           >
-            <Plus size={20} className="text-slate-300" />
+            <Plus size={20} />
           </button>
         </div>
 
-        {/* Play/Reset Controls */}
         <div className="flex items-center gap-8">
           <button 
             onClick={resetTimer}
-            className="p-4 bg-slate-800 hover:bg-slate-700 rounded-2xl text-slate-300 transition-all active:scale-90"
-            title="Reset ke 5 Menit"
+            className={`p-4 rounded-2xl transition-all active:scale-75 active:rotate-[-45deg] ${
+              isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-white border border-slate-200 text-slate-500 shadow-sm'
+            }`}
           >
             <RotateCcw size={24} />
           </button>
           <button 
             onClick={toggleTimer}
-            className={`p-6 ${
+            className={`p-6 text-white rounded-3xl shadow-2xl transition-all active:scale-75 scale-110 ${
               isActive 
-                ? 'bg-orange-600 hover:bg-orange-500' 
-                : (mode === 'focus' ? 'bg-blue-600 hover:bg-blue-500' : 'bg-emerald-600 hover:bg-emerald-500')
-            } rounded-3xl shadow-2xl shadow-blue-500/20 transition-all active:scale-90 scale-110`}
+                ? 'bg-orange-600 shadow-orange-500/20' 
+                : (mode === 'focus' ? 'bg-blue-600 shadow-blue-500/20' : 'bg-emerald-600 shadow-emerald-500/20')
+            }`}
           >
-            {isActive ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+            <div className="transition-transform duration-200">
+              {isActive ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+            </div>
           </button>
         </div>
 
-        {/* Mode Selector Tabs */}
-        <div className="bg-slate-900/50 p-1.5 rounded-2xl flex gap-1 border border-slate-800 w-fit">
+        <div className={`p-1.5 rounded-2xl flex gap-1 border transition-colors ${
+          isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-200/50 border-slate-200'
+        }`}>
           <button 
             onClick={() => switchMode('focus')}
-            className={`px-8 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-8 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
               mode === 'focus' 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
             Fokus
           </button>
           <button 
             onClick={() => switchMode('break')}
-            className={`px-8 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-8 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
               mode === 'break' 
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' 
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-emerald-600 text-white shadow-lg' 
+                : isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
             Istirahat
           </button>
         </div>
-        
-        <p className="text-slate-600 text-[10px] font-medium tracking-widest uppercase mt-2">
-          {mode === 'focus' ? `Target Fokus: ${focusDuration/60} Menit` : `Target Istirahat: ${breakDuration/60} Menit`}
-        </p>
       </div>
     </div>
   );

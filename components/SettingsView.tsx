@@ -2,19 +2,27 @@
 import React from 'react';
 import { User, Bell, Shield, HelpCircle, LogOut, ChevronRight } from 'lucide-react';
 
-const SettingsView: React.FC = () => {
+interface SettingsViewProps {
+  isDarkMode: boolean;
+}
+
+const SettingsView: React.FC<SettingsViewProps> = ({ isDarkMode }) => {
   const SettingItem = ({ icon, label, sublabel }: { icon: React.ReactNode, label: string, sublabel?: string }) => (
-    <button className="w-full flex items-center justify-between p-4 bg-[#1e293b] rounded-2xl border border-slate-800 hover:border-slate-700 transition-all active:scale-[0.98]">
+    <button className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
+      isDarkMode 
+        ? 'bg-[#1e293b] border-slate-800 hover:border-slate-700' 
+        : 'bg-white border-slate-100 shadow-sm hover:border-slate-200'
+    }`}>
       <div className="flex items-center gap-4">
-        <div className="p-2 bg-slate-800 rounded-xl text-slate-300">
+        <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
           {icon}
         </div>
         <div className="text-left">
-          <p className="font-semibold text-slate-100">{label}</p>
-          {sublabel && <p className="text-xs text-slate-500">{sublabel}</p>}
+          <p className={`font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{label}</p>
+          {sublabel && <p className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{sublabel}</p>}
         </div>
       </div>
-      <ChevronRight size={20} className="text-slate-600" />
+      <ChevronRight size={20} className={isDarkMode ? 'text-slate-600' : 'text-slate-300'} />
     </button>
   );
 
@@ -25,31 +33,33 @@ const SettingsView: React.FC = () => {
           <img 
             src="https://picsum.photos/seed/user123/200" 
             alt="Profile" 
-            className="w-full h-full rounded-full border-4 border-[#0f172a] object-cover"
+            className={`w-full h-full rounded-full border-4 object-cover ${isDarkMode ? 'border-[#0f172a]' : 'border-slate-50'}`}
           />
         </div>
         <div>
-          <h2 className="text-xl font-bold">EduBro User</h2>
-          <p className="text-sm text-slate-500">Pelajar Menengah Atas</p>
+          <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>EduBro User</h2>
+          <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Pelajar Menengah Atas</p>
           <button className="mt-2 text-xs font-bold text-blue-500 hover:underline">Edit Profil</button>
         </div>
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-slate-600 uppercase tracking-widest px-2">Akun & Aplikasi</h3>
-        <SettingItem icon={<User size={20} />} label="Informasi Pribadi" sublabel="Email, Tanggal Lahir, Sekolah" />
-        <SettingItem icon={<Bell size={20} />} label="Notifikasi" sublabel="Atur pengingat tugas & timer" />
+        <h3 className={`text-xs font-bold uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Akun & Aplikasi</h3>
+        <SettingItem icon={<User size={20} />} label="Informasi Pribadi" sublabel="Email, Sekolah" />
+        <SettingItem icon={<Bell size={20} />} label="Notifikasi" sublabel="Atur pengingat tugas" />
         <SettingItem icon={<Shield size={20} />} label="Keamanan" sublabel="Kata sandi & Autentikasi" />
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-slate-600 uppercase tracking-widest px-2">Dukungan</h3>
+        <h3 className={`text-xs font-bold uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Dukungan</h3>
         <SettingItem icon={<HelpCircle size={20} />} label="Pusat Bantuan" />
         <SettingItem icon={<LogOut size={20} />} label="Keluar" />
       </div>
 
       <div className="text-center pt-8">
-        <p className="text-slate-700 text-xs">EduBro v1.0.4 • Made with ❤️ for Students</p>
+        <p className={`text-xs font-medium ${isDarkMode ? 'text-slate-700' : 'text-slate-300'}`}>
+          EduBro v1.0.5 • Build with ❤️
+        </p>
       </div>
     </div>
   );
